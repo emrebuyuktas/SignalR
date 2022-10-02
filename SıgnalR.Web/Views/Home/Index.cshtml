@@ -1,0 +1,40 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@section Scripts
+{
+    <script src="lib/microsoft-signalr/signalr.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            console.log("test");
+     
+            const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7161/MyHub",
+            {
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets
+            }).build();
+            $("#conStatus").text(connection.connectionState);
+            connection.start().then(() => {
+            $("#conStatus").text(connection.connectionState);
+            }).catch((err) => { console.log(err) });
+            $("#conStatus").text(connection.connectionState);
+            $("#btnNameSave").click(() => {
+                console.log($("#txtName").val());
+                connection.invoke("SendName", $("#txtName").val()).catch((err) => console.log(err))
+            });
+            connection.on("ReceiveName", (name) => {
+                console.log(name);
+            });
+        });
+
+    </script>
+}
+
+<div class="col-md-8 offset-2">
+    <input class="form-control" type="text" id="txtName"/>
+    <hr/>
+    <button class="btn btn-primary" id="btnNameSave">Save Name</button>
+    <div class="alert alert-info">
+        Connection Status: <strong id="conStatus"></strong>
+    </div>
+</div>

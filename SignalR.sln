@@ -5,6 +5,8 @@ VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.API", "SignalR.API\SignalR.API.csproj", "{688B8401-4669-4007-887D-C45DF17FAEE7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SıgnalR.Web", "SıgnalR.Web\SıgnalR.Web.csproj", "{C4B6A7F5-3060-424A-AF08-0F083294F4EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{688B8401-4669-4007-887D-C45DF17FAEE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{688B8401-4669-4007-887D-C45DF17FAEE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{688B8401-4669-4007-887D-C45DF17FAEE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4B6A7F5-3060-424A-AF08-0F083294F4EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4B6A7F5-3060-424A-AF08-0F083294F4EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4B6A7F5-3060-424A-AF08-0F083294F4EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4B6A7F5-3060-424A-AF08-0F083294F4EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
