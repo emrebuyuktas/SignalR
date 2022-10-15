@@ -6,24 +6,134 @@
     <script src="lib/microsoft-signalr/signalr.min.js"></script>
     <script type="text/javascript">
         $(document).ready(() => {
-            console.log("test");
      
-            const connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7161/MyHub",
+            const connection = new signalR.HubConnectionBuilder().configureLogging(signalR.LogLevel.Information).withAutomaticReconnect().withUrl("https://localhost:7161/MyHub",
             {
                 skipNegotiation: true,
                 transport: signalR.HttpTransportType.WebSockets
             }).build();
-            $("#conStatus").text(connection.connectionState);
-            connection.start().then(() => {
-            $("#conStatus").text(connection.connectionState);
-            }).catch((err) => { console.log(err) });
-            $("#conStatus").text(connection.connectionState);
+            
+            function Start(){
+                            statusShow();
+                            connection.start().then(() => {
+                            statusShow();
+                            //connection.invoke("GetNames");
+                            connection.invoke("GetNamesByGroup");
+                            $("#loading").hide();
+                            }).catch((err) => { 
+                                console.log(err);
+                                setTimeout(()=>Start(),2000);
+                            });
+            }
+            
+            function statusShow(){
+                $("#conStatus").text(connection.state);
+            }
+            
+            
+
+            statusShow();
+            Start();
+            
+            connection.on("ReceiveClientCount",(clientCount)=>{
+                $("#clientCount").text(clientCount);
+            });
+            
+            connection.on("Notify",(teamCount)=>{
+                $("#teamCount").text(teamCount);
+            });
+            
+            connection.on("Error",(errorMessage)=>{
+                alert(errorMessage);
+            });
+            
+            connection.onreconnecting(err=>{
+               $("#loading").show();
+               statusShow();
+            });
+            
+            connection.onreconnected(connectionId=>{
+                $("#loading").hide();
+                statusShow();
+            });
+            
+            connection.onclose(()=>{
+                $("#loading").hide();
+                statusShow();
+                Start();
+            });
+            
             $("#btnNameSave").click(() => {
-                console.log($("#txtName").val());
                 connection.invoke("SendName", $("#txtName").val()).catch((err) => console.log(err))
             });
             connection.on("ReceiveName", (name) => {
-                console.log(name);
+                $("#nameList").append(`<li class="list-group-item"> ${name}</li>`)
+            });
+            
+            
+                        connection.on("ReceiveNames", (names) => {
+                            console.log(names);
+                            $("#nameList").empty();
+                            names.forEach((item, index) => {
+                                $("#nameList").append(`<li class="list-group-item">${item} </li>`)
+                            })
+                        });
+                        
+              $("#btnNameTeam").click(()=>{
+                 let name =  $("#txtName").val();
+                 let teamName=$("input[type=radio]:checked").val();
+                 if (teamName==null){alert("choose a team!")}
+                 else{
+                                   connection.invoke("SendNameByGroup",name, teamName).catch((err)=>{
+                                         alert(err.message); 
+                                      });
+                 }
+              });
+              
+            $("#btnProduct").click(() => {
+                let product = { "Id": 1, "Name": "Kalem", "Price": 100, "Stock": 200 };
+                connection.invoke("SendProduct", product);
+            });
+            
+            
+            connection.on("ReceiveProduct", (product) => {
+                console.log(product);
+            });
+            
+            connection.on("ReceiveMessageByGroup",(name,teamId)=>{
+                let listName;
+                
+                if (teamId==4){
+                   listName="ATeamList";
+                }
+                else{
+                    listName="BTeamList";
+                }
+                $(`#${listName}`).append(`<li class="list-group-item">${name} </li>`)
+            });
+            connection.on("ReceiveNamesByGroup", (teams) => {
+                console.log(teams);
+                teams.forEach((team, index) => {
+                    let listName;
+                    if (team.teamId == 4)
+                        listName = "ATeamList";
+                    else
+                        listName = "BTeamList";
+                    team.users.forEach((user, index2) => {
+                        $(`#${listName}`).append(`<li class="list-group-item">${user.name} </li>`)
+                    })
+               });
+            });
+            
+            $("input[type=radio]").change(()=>{
+               let value=$("input[type=radio]:checked").val();
+               if (value=="Team A"){
+                   connection.invoke("AddToGroup",value);
+                   connection.invoke("RemoveFromGroup","Team B");
+               }else{
+                       connection.invoke("AddToGroup",value);
+                       connection.invoke("RemoveFromGroup","Team A");
+               }
             });
         });
 
@@ -34,7 +144,42 @@
     <input class="form-control" type="text" id="txtName"/>
     <hr/>
     <button class="btn btn-primary" id="btnNameSave">Save Name</button>
-    <div class="alert alert-info">
-        Connection Status: <strong id="conStatus"></strong>
+    <button class="btn btn-warning" id="btnNameTeam">Save to Team</button>
+     <button class="btn btn-danger" id="btnProduct">Send Product</button>
+    <div class="alert alert-info mt-2">
+        <div class="float-left">
+            Connection Status: <strong id="conStatus"></strong>
+            Client Count: <strong id="clientCount"></strong>
+            Team Count: <strong id="teamCount"></strong>
+        </div>
+        <div class="float-right">
+            <div id="loading" class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="TeamGroup" value="Team A">
+            <label class="form-check-label"> Team A</label>
+        </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="TeamGroup" value="Team B">
+                    <label class="form-check-label"> Team B</label>
+                </div>
+    </div>
+    <div class="col-md-8 offset-2">,
+        <div class="row">
+            <div class="col-md-6">
+                <ul class="list-group" id="ATeamList"></ul>
+            </div>
+            <div class="col-md-6">
+                <ul class="list-group" id="BTeamList"></ul>
+            </div>
+        </div>
+        
     </div>
 </div>
